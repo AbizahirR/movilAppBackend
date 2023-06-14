@@ -38,6 +38,9 @@ const checkLogin = (user) => __awaiter(void 0, void 0, void 0, function* () {
         role: existUser.role,
         token: token
     };
+    if ("summary" in existUser) {
+        filteredUserData["summary"] = existUser.summary;
+    }
     return filteredUserData;
 });
 exports.checkLogin = checkLogin;

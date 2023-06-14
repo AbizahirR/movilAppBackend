@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.ts",
-  "type": "module",
   "scripts": {
+    "build": "tsc",
+    "start": "node ./dist/app.js",
     "dev": "nodemon ./src/app.ts"
   },
   "keywords": [],

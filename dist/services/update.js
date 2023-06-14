@@ -75,8 +75,8 @@ const updateU = (data) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.updateU = updateU;
 const updateD = (data) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lastPassword, password, _id, email, modifiedMail, modifiedPassword } = data;
-    if (!modifiedMail && !modifiedPassword)
+    const { lastPassword, password, _id, email, summary, modifiedMail, modifiedPassword, modifiedSummary } = data;
+    if (!modifiedMail && !modifiedPassword && !modifiedSummary)
         return { error: "NO_CHANGES" };
     let existsDoctorId = yield Doctor_1.default.exists({ _id: _id });
     if (!existsDoctorId)
@@ -87,7 +87,7 @@ const updateD = (data) => __awaiter(void 0, void 0, void 0, function* () {
     const isMatch = yield (0, encryptHandler_1.comparePassword)(lastPassword, existDoctor.password);
     if (!isMatch)
         return { error: "WRONG_PASSWORD" };
-    if (modifiedMail && !modifiedPassword) {
+    if (modifiedMail && !modifiedPassword && !modifiedSummary) {
         let existsUserMail = yield User_1.default.exists({ email: email });
         let existsDoctorMail = yield Doctor_1.default.exists({ email: email });
         if (email === existDoctor.email)
@@ -102,7 +102,7 @@ const updateD = (data) => __awaiter(void 0, void 0, void 0, function* () {
             return { error: "ERROR_UPDATE_DOCTOR" };
         }
     }
-    else if (!modifiedMail && modifiedPassword) {
+    else if (!modifiedMail && modifiedPassword && !modifiedSummary) {
         const hashedPassword = yield (0, encryptHandler_1.encryptPassword)(password);
         const updateDoctor = yield Doctor_1.default.updateOne({ _id: _id }, { password: hashedPassword });
         if (updateDoctor.modifiedCount === 1) {
@@ -112,7 +112,7 @@ const updateD = (data) => __awaiter(void 0, void 0, void 0, function* () {
             return { error: "ERROR_UPDATE_DOCTOR" };
         }
     }
-    else if (modifiedMail && modifiedPassword) {
+    else if (modifiedMail && modifiedPassword && !modifiedSummary) {
         let existsUserMail = yield User_1.default.exists({ email: email });
         let existsDoctorMail = yield Doctor_1.default.exists({ email: email });
         if (email === existDoctor.email)
@@ -123,6 +123,33 @@ const updateD = (data) => __awaiter(void 0, void 0, void 0, function* () {
             return { error: "EMAIL_EXISTS" };
         const hashedPassword = yield (0, encryptHandler_1.encryptPassword)(password);
         const updateDoctor = yield Doctor_1.default.updateOne({ _id: _id }, { password: hashedPassword, email: email });
+        if (updateDoctor.modifiedCount === 1) {
+            return { message: "DOCTOR_UPDATED" };
+        }
+        else {
+            return { error: "ERROR_UPDATE_DOCTOR" };
+        }
+    }
+    else if (modifiedMail && modifiedPassword && modifiedSummary) {
+        let existsUserMail = yield User_1.default.exists({ email: email });
+        let existsDoctorMail = yield Doctor_1.default.exists({ email: email });
+        if (email === existDoctor.email)
+            return { error: "SAME_EMAIL" };
+        if (password === existDoctor.password)
+            return { error: "SAME_PASSWORD" };
+        if (existsUserMail || existsDoctorMail)
+            return { error: "EMAIL_EXISTS" };
+        const hashedPassword = yield (0, encryptHandler_1.encryptPassword)(password);
+        const updateDoctor = yield Doctor_1.default.updateOne({ _id: _id }, { password: hashedPassword, email: email, summary: summary });
+        if (updateDoctor.modifiedCount === 1) {
+            return { message: "DOCTOR_UPDATED" };
+        }
+        else {
+            return { error: "ERROR_UPDATE_DOCTOR" };
+        }
+    }
+    else if (!modifiedMail && !modifiedPassword && modifiedSummary) {
+        const updateDoctor = yield Doctor_1.default.updateOne({ _id: _id }, { summary: summary });
         if (updateDoctor.modifiedCount === 1) {
             return { message: "DOCTOR_UPDATED" };
         }

@@ -70,9 +70,9 @@ const updateU = async (data: IUserUpdate) => {
 };
 
 const updateD = async(data: IDoctorUpdate) => {
-    const { lastPassword, password, _id, email, modifiedMail, modifiedPassword } = data;
+    const { lastPassword, password, _id, email, summary, modifiedMail, modifiedPassword, modifiedSummary } = data;
 
-    if (!modifiedMail && !modifiedPassword) return { error: "NO_CHANGES" };
+    if (!modifiedMail && !modifiedPassword && !modifiedSummary) return { error: "NO_CHANGES" };
 
     let existsDoctorId = await DoctorModel.exists({ _id: _id });
 
@@ -86,7 +86,7 @@ const updateD = async(data: IDoctorUpdate) => {
 
     if (!isMatch) return { error: "WRONG_PASSWORD" };
 
-    if (modifiedMail && !modifiedPassword) {
+    if (modifiedMail && !modifiedPassword && !modifiedSummary) {
         
         let existsUserMail = await UserModel.exists({ email: email });
         let existsDoctorMail = await DoctorModel.exists({ email: email });
@@ -102,7 +102,7 @@ const updateD = async(data: IDoctorUpdate) => {
         } else {
             return { error: "ERROR_UPDATE_DOCTOR" };
         }
-    } else if (!modifiedMail && modifiedPassword) {
+    } else if (!modifiedMail && modifiedPassword && !modifiedSummary) {
         const hashedPassword = await encryptPassword(password);
 
         const updateDoctor = await DoctorModel.updateOne({ _id: _id }, { password: hashedPassword });
@@ -112,7 +112,7 @@ const updateD = async(data: IDoctorUpdate) => {
         } else {
             return { error: "ERROR_UPDATE_DOCTOR" };
         }
-    } else if (modifiedMail && modifiedPassword) {
+    } else if (modifiedMail && modifiedPassword && !modifiedSummary) {
 
         let existsUserMail = await UserModel.exists({ email: email });
         let existsDoctorMail = await DoctorModel.exists({ email: email });
@@ -125,6 +125,33 @@ const updateD = async(data: IDoctorUpdate) => {
         const hashedPassword = await encryptPassword(password);
 
         const updateDoctor = await DoctorModel.updateOne({ _id: _id }, { password: hashedPassword, email: email });
+
+        if (updateDoctor.modifiedCount === 1) {
+            return { message: "DOCTOR_UPDATED" };
+        } else {
+            return { error: "ERROR_UPDATE_DOCTOR" };
+        }
+    } else if (modifiedMail && modifiedPassword && modifiedSummary) {
+
+        let existsUserMail = await UserModel.exists({ email: email });
+        let existsDoctorMail = await DoctorModel.exists({ email: email });
+
+        if (email === existDoctor.email) return { error: "SAME_EMAIL" };
+        if (password === existDoctor.password) return { error: "SAME_PASSWORD" };
+
+        if (existsUserMail || existsDoctorMail) return { error: "EMAIL_EXISTS" };
+
+        const hashedPassword = await encryptPassword(password);
+
+        const updateDoctor = await DoctorModel.updateOne({ _id: _id }, { password: hashedPassword, email: email, summary: summary });
+
+        if (updateDoctor.modifiedCount === 1) {
+            return { message: "DOCTOR_UPDATED" };
+        } else {
+            return { error: "ERROR_UPDATE_DOCTOR" };
+        }
+    } else if (!modifiedMail && !modifiedPassword && modifiedSummary) {
+        const updateDoctor = await DoctorModel.updateOne({ _id: _id }, { summary: summary });
 
         if (updateDoctor.modifiedCount === 1) {
             return { message: "DOCTOR_UPDATED" };

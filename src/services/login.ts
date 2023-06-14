@@ -21,7 +21,7 @@ const checkLogin = async (user: IAuth) => {
 
     const token = await signToken(existUser._id, existUser.name, existUser.lastName, existUser.role, existUser.email);
 
-    const filteredUserData = {
+    const filteredUserData: any = {
         _id: existUser._id,
         name: existUser.name,
         lastName: existUser.lastName,
@@ -30,6 +30,10 @@ const checkLogin = async (user: IAuth) => {
         token: token
     }
     
+    if ("summary" in existUser) {
+        filteredUserData["summary"] = existUser.summary;
+    }
+
     return filteredUserData;
 };
 
